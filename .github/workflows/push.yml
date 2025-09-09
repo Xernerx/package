@@ -1,0 +1,80 @@
+# @format
+
+name: Push Orchestration
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  determine:
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.branch.outputs.branch }}
+      package-name: ${{ steps.pkg.outputs.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: branch
+        run: echo "branch=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+      - id: pkg
+        run: echo "name=$(jq -r .name package.json)" >> $GITHUB_OUTPUT
+
+  main-flow:
+    if: ${{ needs.determine.outputs.branch == 'main' }}
+    needs: determine
+    uses: ./.github/workflows/build.yml
+
+  main-test:
+    if: ${{ needs.determine.outputs.branch == 'main' }}
+    needs: main-flow
+    uses: ./.github/workflows/test.yml
+
+  main-docs:
+    if: ${{ needs.determine.outputs.branch == 'main' }}
+    needs: main-test
+    uses: ./.github/workflows/docs.yml
+    with:
+      branch: lts
+      package-name: ${{ needs.determine.outputs.package-name }}
+    secrets: inherit
+
+  main-format:
+    if: ${{ needs.determine.outputs.branch == 'main' }}
+    needs: main-docs
+    uses: ./.github/workflows/format.yml
+
+  main-publish:
+    if: ${{ needs.determine.outputs.branch == 'main' }}
+    needs: main-format
+    uses: ./.github/workflows/publish-lts.yml
+    secrets: inherit
+
+  beta-flow:
+    if: ${{ needs.determine.outputs.branch == 'beta' }}
+    needs: determine
+    uses: ./.github/workflows/build.yml
+
+  beta-test:
+    if: ${{ needs.determine.outputs.branch == 'beta' }}
+    needs: beta-flow
+    uses: ./.github/workflows/test.yml
+
+  beta-docs:
+    if: ${{ needs.determine.outputs.branch == 'beta' }}
+    needs: beta-test
+    uses: ./.github/workflows/docs.yml
+    with:
+      branch: beta
+      package-name: ${{ needs.determine.outputs.package-name }}
+    secrets: inherit
+
+  beta-format:
+    if: ${{ needs.determine.outputs.branch == 'beta' }}
+    needs: beta-docs
+    uses: ./.github/workflows/format.yml
+
+  beta-publish:
+    if: ${{ needs.determine.outputs.branch == 'beta' }}
+    needs: beta-format
+    uses: ./.github/workflows/publish-beta.yml
+    secrets: inherit

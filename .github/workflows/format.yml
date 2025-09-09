@@ -1,0 +1,12 @@
+# @format
+
+name: Format
+on:
+  workflow_call:
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npx prettier --write .
