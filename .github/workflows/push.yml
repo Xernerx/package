@@ -33,8 +33,6 @@ jobs:
     if: ${{ needs.determine.outputs.branch == 'main' }}
     needs: main-test
     uses: ./.github/workflows/docs.yml
-    permissions:
-      contents: write # <-- without this, it fails
     with:
       branch: lts
       package-name: ${{ needs.determine.outputs.package-name }}
