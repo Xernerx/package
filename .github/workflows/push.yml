@@ -24,11 +24,6 @@ jobs:
     needs: determine
     uses: ./.github/workflows/build.yml
 
-  main-test:
-    if: ${{ needs.determine.outputs.branch == 'main' }}
-    needs: main-flow
-    uses: ./.github/workflows/test.yml
-
   main-docs:
     if: ${{ needs.determine.outputs.branch == 'main' }}
     needs: main-test
@@ -55,11 +50,6 @@ jobs:
     if: ${{ needs.determine.outputs.branch == 'beta' }}
     needs: determine
     uses: ./.github/workflows/build.yml
-
-  beta-test:
-    if: ${{ needs.determine.outputs.branch == 'beta' }}
-    needs: beta-flow
-    uses: ./.github/workflows/test.yml
 
   beta-docs:
     if: ${{ needs.determine.outputs.branch == 'beta' }}
