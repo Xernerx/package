@@ -13,4 +13,4 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npx @arethetypeswrong/cli .
+      - run: npx @arethetypeswrong/cli
