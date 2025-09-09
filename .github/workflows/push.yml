@@ -62,11 +62,13 @@ jobs:
     uses: ./.github/workflows/test.yml
 
   beta-docs:
-    if: ${{ needs.determine.outputs.branch == 'beta' }}
-    needs: beta-test
+    if: ${{ needs.determine.outputs.branch == 'main' }}
+    needs: main-test
     uses: ./.github/workflows/docs.yml
+    permissions:
+      contents: write
     with:
-      branch: beta
+      branch: lts
       package-name: ${{ needs.determine.outputs.package-name }}
     secrets: inherit
 
