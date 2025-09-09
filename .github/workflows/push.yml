@@ -62,7 +62,7 @@ jobs:
     uses: ./.github/workflows/test.yml
 
   beta-docs:
-    if: ${{ needs.determine.outputs.branch == 'docs' }}
+    if: ${{ needs.determine.outputs.branch == 'beta' }}
     needs: beta-test
     uses: ./.github/workflows/docs.yml
     permissions:
