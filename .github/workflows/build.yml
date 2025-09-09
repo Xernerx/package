@@ -3,14 +3,12 @@
 name: Build
 on:
   workflow_call:
-    outputs:
-      build_artifacts:
-        description: 'Path to built files'
-        value: dist
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      build_artifacts: ${{ steps.build.outputs.build_artifacts }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,4 +16,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm install
-      - run: npx tsup
+      - id: build
+        run: |
+          npx tsup
+          echo "build_artifacts=dist" >> $GITHUB_OUTPUT
