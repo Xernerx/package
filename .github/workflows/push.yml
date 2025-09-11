@@ -45,8 +45,8 @@ jobs:
         run: |
           mkdir -p typedoc_out
           npx typedoc --out typedoc_out src
-          git clone https://github.com/Xernerx/docs.git docs
-          cd docs
+          git clone https://github.com/Xernerx/docs.git docs-repo
+          cd docs-repo
           mkdir -p packages
           mkdir -p packages/${{ steps.pkg.outputs.name }}/${{ steps.pkg.outputs.version }}
           cp -r ../typedoc_out/* packages/${{ steps.pkg.outputs.name }}/${{ steps.pkg.outputs.version }}/
