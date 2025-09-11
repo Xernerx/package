@@ -1,74 +1,69 @@
 # @format
 
-name: Push Orchestration
+# .github/workflows/publish.yml
+name: Publish Packages
+
 on:
   push:
     branches:
-      - '**'
+      - main
+      - beta
 
 jobs:
-  determine:
+  build-and-publish:
     runs-on: ubuntu-latest
-    outputs:
-      branch: ${{ steps.branch.outputs.branch }}
-      package-name: ${{ steps.pkg.outputs.name }}
+
     steps:
-      - uses: actions/checkout@v4
-      - id: branch
-        run: echo "branch=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
-      - id: pkg
-        run: echo "name=$(jq -r .name package.json)" >> $GITHUB_OUTPUT
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-  main-flow:
-    if: ${{ needs.determine.outputs.branch == 'main' }}
-    needs: determine
-    uses: ./.github/workflows/build.yml
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
 
-  main-docs:
-    if: ${{ needs.determine.outputs.branch == 'main' }}
-    needs: main-build
-    uses: ./.github/workflows/docs.yml
-    permissions:
-      contents: write
-    with:
-      branch: lts
-      package-name: ${{ needs.determine.outputs.package-name }}
-    secrets: inherit
+      - name: Install dependencies
+        run: npm ci
 
-  main-format:
-    if: ${{ needs.determine.outputs.branch == 'main' }}
-    needs: main-docs
-    uses: ./.github/workflows/format.yml
+      - name: Build with tsup
+        run: npx tsup
 
-  main-publish:
-    if: ${{ needs.determine.outputs.branch == 'main' }}
-    needs: main-format
-    uses: ./.github/workflows/publish-lts.yml
-    secrets: inherit
+      - name: Check exports with arethetypeswrong
+        run: npx @arethetypeswrong/cli .
 
-  beta-flow:
-    if: ${{ needs.determine.outputs.branch == 'beta' }}
-    needs: determine
-    uses: ./.github/workflows/build.yml
+      - name: Run Prettier
+        run: npx prettier --check .
 
-  beta-docs:
-    if: ${{ needs.determine.outputs.branch == 'beta' }}
-    needs: beta-build
-    uses: ./.github/workflows/docs.yml
-    permissions:
-      contents: write
-    with:
-      branch: lts
-      package-name: ${{ needs.determine.outputs.package-name }}
-    secrets: inherit
+      - name: Get package info
+        id: pkg
+        run: |
+          echo "name=$(node -p "require('./package.json').name")" >> $GITHUB_OUTPUT
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
-  beta-format:
-    if: ${{ needs.determine.outputs.branch == 'beta' }}
-    needs: beta-docs
-    uses: ./.github/workflows/format.yml
+      - name: Push docs to docs repo
+        run: |
+          mkdir -p docs
+          # Replace with your actual docs generation command
+          npx typedoc --out docs src
+          git clone https://github.com/Xernerx/docs.git
+          cd docs
+          mkdir -p packages/${{ steps.pkg.outputs.name }}/${{ steps.pkg.outputs.version }}
+          cp -r ../docs/* packages/${{ steps.pkg.outputs.name }}/${{ steps.pkg.outputs.version }}/
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "docs: update for ${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.XERNERX_ACCESS_TOKEN }}
 
-  beta-publish:
-    if: ${{ needs.determine.outputs.branch == 'beta' }}
-    needs: beta-format
-    uses: ./.github/workflows/publish-beta.yml
-    secrets: inherit
+      - name: Publish to npm
+        run: |
+          if [ "${GITHUB_REF##*/}" = "beta" ]; then
+            npm publish --tag beta --access public
+          else
+            npm publish --access public
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
