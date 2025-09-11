@@ -5,3 +5,5 @@ export function helloWorld(message = 'Hello World!') {
 
 	return message;
 }
+
+export const version = '1.0.0';
