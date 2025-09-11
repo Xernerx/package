@@ -1,9 +1,5 @@
 /** @format */
 
-export function helloWorld(message = 'Hello World!') {
-	console.log(message);
+import { test } from './functions/test.js';
 
-	return message;
-}
-
-export const version = '1.0.0';
+test();
