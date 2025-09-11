@@ -1,5 +1,7 @@
 /** @format */
 
-export function helloWorld() {
-	console.log('Hello world!');
+export function helloWorld(message = 'Hello World!') {
+	console.log(message);
+
+	return message;
 }

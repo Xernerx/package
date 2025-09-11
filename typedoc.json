@@ -2,7 +2,6 @@
 	"plugin": ["typedoc-github-theme"],
 	"theme": "typedoc-github-theme",
 
-	"name": "XERNERX",
 	"entryPoints": ["src/*"],
 	"entryPointStrategy": "expand",
 	"exclude": ["node_modules", "src/main.ts"],
@@ -46,5 +45,5 @@
 		"notExported": true,
 		"invalidLink": true,
 		"notDocumented": false
-	},
+	}
 }
