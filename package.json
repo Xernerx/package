@@ -2,21 +2,45 @@
 	"name": "package",
 	"version": "1.0.0",
 	"description": "",
-	"main": "index.js",
+	"homepage": "",
+	"type": "module",
+	"main": "./dist/main.cjs",
+	"module": "./dist/main.js",
+	"types": "./dist/main.d.ts",
+	"exports": {
+		"require": {
+			"types": "./dist/main.d.cts",
+			"default": "./dist/main.cjs"
+		},
+		"import": {
+			"types": "./dist/main.d.ts",
+			"default": "./dist/main.js"
+		}
+	},
+	"files": [
+		"src",
+		"dist"
+	],
 	"scripts": {
 		"beta": "npm version prerelease --preid=beta",
 		"patch": "npm version patch",
 		"minor": "npm version minor",
-		"major": "npm version major"
+		"major": "npm version major",
+		"build": "npm i && npx tsup && npx @arethetypeswrong/cli --pack",
+		"dev": "npm i && npx tsc-watch --onSuccess 'npm run build'"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "MIT",
-	"type": "module",
 	"devDependencies": {
+		"@arethetypeswrong/cli": "^0.18.2",
 		"@types/node": "^24.3.1",
 		"tsc-watch": "^7.1.1",
 		"tsup": "^8.5.0",
 		"typescript": "^5.9.2"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
 	}
 }
